@@ -77,8 +77,9 @@ class ProcessExecutionHandler(Process):
         # concatenate path + args
         # ex.: /sbin/ifconfig -a
         cmd = [self.path, self.args]
+        #
         try:
-            process = Popen('/bin/ls -l /tmp/', bufsize=0, stdout=PIPE, stderr=PIPE)
+            process = Popen(cmd, bufsize=0, stdout=PIPE, stderr=PIPE)
             # wait until process finish
             process.poll()
             self.update_process_data(pid=process.pid,
