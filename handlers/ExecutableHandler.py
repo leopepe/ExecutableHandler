@@ -74,7 +74,7 @@ class ProcessExecutionHandler(Process):
 
         :rtype : tuple
         """
-        # concatenate path + args
+        # concatenate path + args in form of a list
         # ex.: /sbin/ifconfig -a
         cmd = [self.path, self.args]
         #
