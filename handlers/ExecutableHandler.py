@@ -29,10 +29,9 @@ class Process(object):
     """
 
     """
-    def __init__(self, path, args):
-        self.name = path.split('/')[-1]
-        self.path = path
-        self.args = args
+    def __init__(self, cmd):
+        self.name = cmd.split('/')[-1]
+        self.cmd = cmd
         self.pid = None
         self.type = None
         self.stdout = None
@@ -44,53 +43,31 @@ class Process(object):
 class ProcessExecutionHandler(Process):
     """
 
-
-    def __init__(self, path, args):
-        #
-        # Accessing Process constructor method
-        Process.__init__(path, args)
-
-    def run(self):
-        #
-        # Instantiate process object
-        process = Popen(args, bufsize=0, stdout=PIPE, stderr=PIPE)
-        #
-        # the process must finish before closes
-        # returncode only updates after the process is done
-        process.wait()
-        #
-        # update process data dictionary
-        self.update_process_data(pid=process.pid,
-                                 returncode=process.returncode,
-                                 stdout=process.stdout.read(),
-                                 stderr=process.stderr.read())
-        #
-        # call poll() to check if the process has terminated
-        process.poll()
     """
-
-    def run(self):
+    def execute(self):
         """
 
         :rtype : tuple
         """
         # concatenate path + args in form of a list
         # ex.: /sbin/ifconfig -a
-        cmd = [self.path, self.args]
+        cmd = self.cmd.split()
+        print(cmd)
         #
         try:
             process = Popen(cmd, bufsize=0, stdout=PIPE, stderr=PIPE)
             # wait until process finish
+            process.wait()
             process.poll()
-            self.update_process_data(pid=process.pid,
+            self.__update_process_data(pid=process.pid,
                                  returncode=process.returncode,
                                  stdout=process.stdout.read(),
                                  stderr=process.stderr.read())
             return self.returncode, self.stdout, self.stderr
         except IOError:
-            raise IOError("Error while caching stdout from process.")
+            raise OSError
 
-    def update_process_data(self, **kwargs):
+    def __update_process_data(self, **kwargs):
         """
 
         :rtype : dict
@@ -112,13 +89,13 @@ class ProcessExecutionHandler(Process):
 
 def main():
     # instance object ExecHandler()
-    ls = ProcessExecutionHandler(path='/bin/ls', args='-l /tmp/')
-    ls.run()
+    ls = ProcessExecutionHandler(cmd='/bin/ls -l /tmp/')
+    ls.execute()
     process_result = ls.get_process_data()
     print(' PROCESS: {0},\n'
           ' PID: {1}\n'
           ' RETURN CODE: {2}\n'
-          ' STDOUT: {3}'.format(process_result['path'], process_result['pid'], process_result['returncode'], process_result['stdout'])
+          ' STDOUT: {3}'.format(process_result['cmd'], process_result['pid'], process_result['returncode'], process_result['stdout'])
     )
     print('{0}'.format(process_result))
 
